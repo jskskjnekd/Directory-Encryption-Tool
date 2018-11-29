@@ -40,3 +40,18 @@ func (cipher *RSACipher) VerifySignature(message []byte, signature []byte) bool 
 	}
 	return true
 }
+
+func (cipher *RSACipher) Encrypt(message []byte) []byte {
+	label := []byte("orders")
+	ciphertext, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, &cipher.pubKey, message, label)
+	if err != nil {
+		panic(err)
+	}
+	return ciphertext
+}
+
+func (cipher *RSACipher) Decrypt(cipherText []byte) []byte {
+	label := []byte("orders")
+	plainText, _ := rsa.DecryptOAEP(sha256.New(), rand.Reader, &cipher.privKey, cipherText, label)
+	return plainText
+}
