@@ -35,3 +35,8 @@ func TestEncryptionAndDecryption(t *testing.T) {
 	decryptedMessage := r.Decrypt(cipherText)
 	assert.Equal(t, AesKey, decryptedMessage)
 }
+
+func TestWriteCertificate(t *testing.T) {
+	r := GenerateRSACipher()
+	r.WriteCertificate() // TODO: add test of writing certificate
+}

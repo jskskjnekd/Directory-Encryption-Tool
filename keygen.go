@@ -55,3 +55,7 @@ func (cipher *RSACipher) Decrypt(cipherText []byte) []byte {
 	plainText, _ := rsa.DecryptOAEP(sha256.New(), rand.Reader, &cipher.privKey, cipherText, label)
 	return plainText
 }
+
+func (cipher *RSACipher) WriteCertificate() {
+	// TODO: add details of writing certificate
+}
