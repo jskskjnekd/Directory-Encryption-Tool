@@ -1,25 +1,42 @@
 package main
 
 import (
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 )
 
 type RSACipher struct {
-	pubKey  interface{}
-	privKey interface{}
+	pubKey  rsa.PublicKey
+	privKey rsa.PrivateKey
 }
 
 func (cipher *RSACipher) generate() {
 	privKey, _ := rsa.GenerateKey(rand.Reader, 2048)
-	cipher.privKey = privKey.D
-	cipher.pubKey = privKey.E
+	cipher.privKey = *privKey
+	cipher.pubKey = privKey.PublicKey
 }
 
 func (cipher *RSACipher) getPublicKey() interface{} {
-	return cipher.pubKey
+	return cipher.privKey.E
 }
 
 func (cipher *RSACipher) getPrivateKey() interface{} {
-	return cipher.privKey
+	return cipher.privKey.D
+}
+
+func (cipher *RSACipher) Sign(message []byte) []byte {
+	hashed := sha256.Sum256(message[:])
+	signature, _ := rsa.SignPKCS1v15(rand.Reader, &cipher.privKey, crypto.SHA256, hashed[:])
+	return signature
+}
+
+func (cipher *RSACipher) VerifySignature(message []byte, signature []byte) bool {
+	hashed := sha256.Sum256(message)
+	err := rsa.VerifyPKCS1v15(&cipher.pubKey, crypto.SHA256, hashed[:], signature)
+	if err != nil {
+		return false
+	}
+	return true
 }

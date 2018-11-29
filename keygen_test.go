@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -13,5 +13,9 @@ func GenerateECKeyPair() RSACipher {
 
 func TestSignAndVerifyMessage(t *testing.T) {
 	r := GenerateECKeyPair()
-	fmt.Println(r)
+	messageFromAlice := []byte("This is a message from Alice")
+	messageFromBob := []byte("This is a message from Bob")
+	signature := r.Sign(messageFromAlice)
+	assert.Equal(t, true, r.VerifySignature(messageFromAlice, signature))
+	assert.Equal(t, false, r.VerifySignature(messageFromBob, signature))
 }
