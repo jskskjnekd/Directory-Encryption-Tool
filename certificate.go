@@ -11,7 +11,7 @@ type certificate struct {
 	PublicKeyData      string
 }
 
-func (cert *certificate) generate(cipher *RSACipher) {
+func (cert *certificate) generate(cipher Cipher) {
 	cert.PublicKeyAlgorithm = cipher.getPublicKeyAlgorithm()
 	cert.PublicKeyData = cipher.getPublicKeyData()
 	cert.Subject = "CryptoCurrency"
@@ -27,6 +27,6 @@ func (cert *certificate) exportJsonToFile(filePath string) {
 	jsonFile, _ := os.Create(filePath)
 	defer jsonFile.Close()
 	_, _ = jsonFile.Write(certificateJson)
-	jsonFile.Sync()
+	_ = jsonFile.Sync()
 	jsonFile.Close()
 }

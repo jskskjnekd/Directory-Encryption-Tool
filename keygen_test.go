@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"testing"
@@ -49,4 +50,11 @@ func TestWriteCertificate(t *testing.T) {
 	certificateFilePath := "testData/"
 	certificateFileName := "myX509Certificate"
 	cert.exportJsonToFile(certificateFilePath + certificateFileName)
+}
+
+func TestCipherGeneration(t *testing.T) {
+	var cipher Cipher
+	r := GenerateRSACipher()
+	cipher = &r
+	fmt.Println(cipher)
 }
