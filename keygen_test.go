@@ -36,7 +36,17 @@ func TestEncryptionAndDecryption(t *testing.T) {
 	assert.Equal(t, AesKey, decryptedMessage)
 }
 
-func TestWriteCertificate(t *testing.T) {
+func GenerateCertificate() *certificate {
+	var cert certificate
 	r := GenerateRSACipher()
-	r.WriteCertificate() // TODO: add test of writing certificate
+	cert.generate(&r)
+	return &cert
+}
+
+func TestWriteCertificate(t *testing.T) {
+	cert := GenerateCertificate()
+	cert.exportJson()
+	certificateFilePath := "testData/"
+	certificateFileName := "myX509Certificate"
+	cert.exportJsonToFile(certificateFilePath + certificateFileName)
 }

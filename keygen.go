@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
+	"strconv"
 )
 
 type RSACipher struct {
@@ -18,8 +19,12 @@ func (cipher *RSACipher) generate() {
 	cipher.pubKey = privKey.PublicKey
 }
 
-func (cipher *RSACipher) getPublicKey() interface{} {
-	return cipher.privKey.E
+func (cipher *RSACipher) getPublicKeyAlgorithm() string {
+	return "RSA Encryption"
+}
+
+func (cipher *RSACipher) getPublicKeyData() string {
+	return strconv.Itoa(cipher.pubKey.Size()) + ";" + cipher.pubKey.N.String() + ";" + strconv.Itoa(cipher.pubKey.E)
 }
 
 func (cipher *RSACipher) getPrivateKey() interface{} {
@@ -54,8 +59,4 @@ func (cipher *RSACipher) Decrypt(cipherText []byte) []byte {
 	label := []byte("orders")
 	plainText, _ := rsa.DecryptOAEP(sha256.New(), rand.Reader, &cipher.privKey, cipherText, label)
 	return plainText
-}
-
-func (cipher *RSACipher) WriteCertificate() {
-	// TODO: add details of writing certificate
 }
