@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
+	"os/exec"
 	"testing"
 )
 
@@ -60,7 +60,7 @@ func TestCipherGeneration(t *testing.T) {
 	var cipher Cipher
 	r := GenerateRSACipher()
 	cipher = &r
-	fmt.Println(cipher)
+	_ = cipher
 }
 
 func TestECGeneration(t *testing.T) {
@@ -73,9 +73,9 @@ func TestECSignAndVerify(t *testing.T) {
 	ec.generate()
 	messageFromAlice := []byte("This is a message from Alice")
 	messageFromBob := []byte("This is a message from Bob")
-	signatureFromAlice_r, signatureFromAlice_s := ec.Sign(messageFromAlice)
-	assert.Equal(t, true, ec.VerifySignature(messageFromAlice, signatureFromAlice_r, signatureFromAlice_s))
-	assert.Equal(t, false, ec.VerifySignature(messageFromBob, signatureFromAlice_r, signatureFromAlice_s))
+	signaturefromaliceR, signaturefromaliceS := ec.Sign(messageFromAlice)
+	assert.Equal(t, true, ec.VerifySignature(messageFromAlice, signaturefromaliceR, signaturefromaliceS))
+	assert.Equal(t, false, ec.VerifySignature(messageFromBob, signaturefromaliceR, signaturefromaliceS))
 }
 
 func GenerateECCertificate() *certificate {
@@ -89,4 +89,20 @@ func GenerateECCertificate() *certificate {
 func TestWriteECCertificate(t *testing.T) {
 	cert := GenerateECCertificate()
 	CertificateWriteToJson(cert)
+}
+
+func TestGenAndExecKeygen(t *testing.T) {
+	cmdGenerationKeygen := exec.Command("go", "build", "keygen.go")
+	_ = cmdGenerationKeygen.Run()
+	targetDir := "testData/"
+	publicKeyFilePath := targetDir + "pub.txt"
+	privateKeyFilePath := targetDir + "priv.txt"
+	cmdKeygenReadInputs := exec.Command("./keygen", "-t", "ec", "-s", "cryptoKitty", "-pub", publicKeyFilePath, "-priv", privateKeyFilePath)
+	_ = cmdKeygenReadInputs.Run()
+	//matches, err := filepath.Glob(publicKeyFilePath)
+	//if err!= nil{
+	//	panic(err)
+	//}
+	//fmt.Println("matches:\t", matches)
+	//assert.Equal(t, 1, len(matches))
 }

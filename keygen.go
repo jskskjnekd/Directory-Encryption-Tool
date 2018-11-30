@@ -1,62 +1,41 @@
 package main
 
 import (
-	"crypto"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
-	"strconv"
+	"flag"
+	"log"
+	"os"
 )
 
-type RSACipher struct {
-	pubKey  rsa.PublicKey
-	privKey rsa.PrivateKey
+type Cmd struct {
+	AlgorithmType      string
+	Subject            string
+	publicKeyFilePath  string
+	privateKeyFilePath string
 }
 
-func (cipher *RSACipher) generate() {
-	privKey, _ := rsa.GenerateKey(rand.Reader, 2048)
-	cipher.privKey = *privKey
-	cipher.pubKey = privKey.PublicKey
+func main() {
+	logger := createLogger()
+	cmd := &Cmd{}
+	setFlagParametersForCmd(cmd)
+	flag.Parse()
+	logger.Println(cmd)
+	logger.Println("..........................")
 }
 
-func (cipher *RSACipher) getPublicKeyAlgorithm() string {
-	return "RSA Encryption"
+func setFlagParametersForCmd(cmd *Cmd) {
+	flag.StringVar(&cmd.AlgorithmType, "t", "", "Algorithm Type: rsa or ec")
+	flag.StringVar(&cmd.Subject, "s", "", "Subject Name")
+	flag.StringVar(&cmd.publicKeyFilePath, "pub", "", "Public Key File Path")
+	flag.StringVar(&cmd.privateKeyFilePath, "priv", "", "Private Key File Path")
 }
 
-func (cipher *RSACipher) getPublicKeyData() string {
-	return strconv.Itoa(cipher.pubKey.Size()) + ";" + cipher.pubKey.N.String() + ";" + strconv.Itoa(cipher.pubKey.E)
-}
-
-func (cipher *RSACipher) getPrivateKey() interface{} {
-	return cipher.privKey.D
-}
-
-func (cipher *RSACipher) Sign(message []byte) []byte {
-	hashed := sha256.Sum256(message[:])
-	signature, _ := rsa.SignPKCS1v15(rand.Reader, &cipher.privKey, crypto.SHA256, hashed[:])
-	return signature
-}
-
-func (cipher *RSACipher) VerifySignature(message []byte, signature []byte) bool {
-	hashed := sha256.Sum256(message)
-	err := rsa.VerifyPKCS1v15(&cipher.pubKey, crypto.SHA256, hashed[:], signature)
+func createLogger() *log.Logger {
+	f, err := os.OpenFile("text.log",
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return false
+		log.Println(err)
 	}
-	return true
-}
-
-func (cipher *RSACipher) Encrypt(message []byte) []byte {
-	label := []byte("orders")
-	ciphertext, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, &cipher.pubKey, message, label)
-	if err != nil {
-		panic(err)
-	}
-	return ciphertext
-}
-
-func (cipher *RSACipher) Decrypt(cipherText []byte) []byte {
-	label := []byte("orders")
-	plainText, _ := rsa.DecryptOAEP(sha256.New(), rand.Reader, &cipher.privKey, cipherText, label)
-	return plainText
+	logger := log.New(f, "Keygen|", log.LstdFlags)
+	logger.Println("\n\n\n------------------------Log File Created----------------------")
+	return logger
 }
