@@ -25,6 +25,10 @@ func (ec *ECCipher) getPublicKeyData() string {
 	return ec.privateKey.PublicKey.X.String() + ";" + ec.privateKey.PublicKey.Y.String()
 }
 
+func (ec *ECCipher) getPrivateKeyData() string {
+	return ec.privateKey.D.String()
+}
+
 func (ec *ECCipher) Sign(message []byte) (r, s *big.Int) {
 	r, s, _ = ecdsa.Sign(rand.Reader, ec.privateKey, message)
 	return r, s

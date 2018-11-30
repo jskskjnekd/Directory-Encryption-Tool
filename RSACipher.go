@@ -27,6 +27,10 @@ func (cipher *RSACipher) getPublicKeyData() string {
 	return strconv.Itoa(cipher.pubKey.Size()) + ";" + cipher.pubKey.N.String() + ";" + strconv.Itoa(cipher.pubKey.E)
 }
 
+func (cipher *RSACipher) getPrivateKeyData() string {
+	return cipher.privKey.D.String()
+}
+
 func (cipher *RSACipher) getPrivateKey() interface{} {
 	return cipher.privKey.D
 }

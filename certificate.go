@@ -11,10 +11,10 @@ type certificate struct {
 	PublicKeyData      string
 }
 
-func (cert *certificate) generate(cipher Cipher) {
+func (cert *certificate) generate(cipher Cipher, subjectName string) {
 	cert.PublicKeyAlgorithm = cipher.getPublicKeyAlgorithm()
 	cert.PublicKeyData = cipher.getPublicKeyData()
-	cert.Subject = "CryptoCurrency"
+	cert.Subject = subjectName
 }
 
 func (cert *certificate) exportJson() []byte {
