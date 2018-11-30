@@ -28,7 +28,7 @@ func TestSignAndVerifyMessage(t *testing.T) {
 	assert.Equal(t, false, r.VerifySignature(messageFromBob, signatureFromAlice))
 }
 
-func TestEncryptionAndDecryption(t *testing.T) {
+func TestRSAEncryptionAndDecryption(t *testing.T) {
 	AesKeyLength := 32
 	AesKey := generateAESKey(AesKeyLength)
 	r := GenerateRSACipher()
@@ -37,7 +37,7 @@ func TestEncryptionAndDecryption(t *testing.T) {
 	assert.Equal(t, AesKey, decryptedMessage)
 }
 
-func GenerateCertificate() *certificate {
+func GenerateRSACertificate() *certificate {
 	var cert certificate
 	r := GenerateRSACipher()
 	cert.generate(&r)
@@ -45,7 +45,11 @@ func GenerateCertificate() *certificate {
 }
 
 func TestWriteCertificate(t *testing.T) {
-	cert := GenerateCertificate()
+	cert := GenerateRSACertificate()
+	CertificateWriteToJson(cert)
+}
+
+func CertificateWriteToJson(cert *certificate) {
 	cert.exportJson()
 	certificateFilePath := "testData/"
 	certificateFileName := "myX509Certificate"
@@ -74,4 +78,15 @@ func TestECSignAndVerify(t *testing.T) {
 	assert.Equal(t, false, ec.VerifySignature(messageFromBob, signatureFromAlice_r, signatureFromAlice_s))
 }
 
-//TODO: add EC encryption and decryption
+func GenerateECCertificate() *certificate {
+	var ec ECCipher
+	ec.generate()
+	var cert certificate
+	cert.generate(&ec)
+	return &cert
+}
+
+func TestWriteECCertificate(t *testing.T) {
+	cert := GenerateECCertificate()
+	CertificateWriteToJson(cert)
+}
