@@ -58,3 +58,20 @@ func TestCipherGeneration(t *testing.T) {
 	cipher = &r
 	fmt.Println(cipher)
 }
+
+func TestECGeneration(t *testing.T) {
+	var ec ECCipher
+	ec.generate()
+}
+
+func TestECSignAndVerify(t *testing.T) {
+	var ec ECCipher
+	ec.generate()
+	messageFromAlice := []byte("This is a message from Alice")
+	messageFromBob := []byte("This is a message from Bob")
+	signatureFromAlice_r, signatureFromAlice_s := ec.Sign(messageFromAlice)
+	assert.Equal(t, true, ec.VerifySignature(messageFromAlice, signatureFromAlice_r, signatureFromAlice_s))
+	assert.Equal(t, false, ec.VerifySignature(messageFromBob, signatureFromAlice_r, signatureFromAlice_s))
+}
+
+//TODO: add EC encryption and decryption
