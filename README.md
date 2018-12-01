@@ -6,6 +6,12 @@
 # Directory Encryption/Decryption Tool
 
 
+## Prerequisite
+
++ golang version > 1.11.1
+
+
+
 ## `keygen` generation
 
 ```bash
