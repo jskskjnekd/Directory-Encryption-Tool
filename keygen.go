@@ -15,15 +15,15 @@ type Cmd struct {
 
 func main() {
 	logger, cmd, cipher := generateLoggerCmdCipher()
-	exportPublicKeyToCertificateFile(cipher, cmd)
-	writePrivateKeyToFile(cipher, cmd)
+	cmd.exportPublicKeyToCertificateFile(cipher)
+	cmd.writePrivateKeyToFile(cipher)
 	closeLogger(logger)
 }
 
 func generateLoggerCmdCipher() (*log.Logger, *Cmd, Cipher) {
 	logger, cmd := readFromCmdInputs()
 	logger.Println(cmd)
-	cipher := generateCipher(cmd)
+	cipher := cmd.generateCipher()
 	return logger, cmd, cipher
 }
 
@@ -31,20 +31,20 @@ func closeLogger(logger *log.Logger) {
 	logger.Println("\n...........END...............")
 }
 
-func writePrivateKeyToFile(cipher Cipher, cmd *Cmd) {
+func (cmd *Cmd) writePrivateKeyToFile(cipher Cipher) {
 	fullPrivateKey := cipher.getPublicKeyAlgorithm() + ";" + cipher.getPrivateKeyData()
 	f, _ := os.Create(cmd.privateKeyFilePath)
 	_, _ = f.Write([]byte(fullPrivateKey))
 }
 
-func exportPublicKeyToCertificateFile(cipher Cipher, cmd *Cmd) {
+func (cmd *Cmd) exportPublicKeyToCertificateFile(cipher Cipher) {
 	var cert certificate
 	cert.generate(cipher, cmd.Subject)
 	cert.exportJson()
 	cert.exportJsonToFile(cmd.publicKeyFilePath)
 }
 
-func generateCipher(cmd *Cmd) Cipher {
+func (cmd *Cmd) generateCipher() Cipher {
 	var cipher Cipher
 	if cmd.AlgorithmType == "ec" {
 		cipher = generateECCipher(cipher)
