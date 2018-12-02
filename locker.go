@@ -9,7 +9,7 @@ import (
 )
 
 type Locker struct {
-    *Cmd
+    Cmd
     directoryPath string
     keyFilePath string
 }
