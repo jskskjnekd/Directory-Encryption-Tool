@@ -3,8 +3,6 @@ package main
 import (
 	"github.com/stretchr/testify/assert"
 	"math/rand"
-	"os/exec"
-	"path/filepath"
 	"testing"
 )
 
@@ -14,7 +12,7 @@ func GenerateRSACipher() RSACipher {
 	return r
 }
 
-func generateAESKey(length int) []byte {
+func generateAESKeyForTestONLY(length int) []byte {
 	AES_key := make([]byte, length)
 	_, _ = rand.Read(AES_key)
 	return AES_key
@@ -31,7 +29,7 @@ func TestSignAndVerifyMessage(t *testing.T) {
 
 func TestRSAEncryptionAndDecryption(t *testing.T) {
 	AesKeyLength := 32
-	AesKey := generateAESKey(AesKeyLength)
+	AesKey := generateAESKeyForTestONLY(AesKeyLength)
 	r := GenerateRSACipher()
 	cipherText := r.Encrypt(AesKey)
 	decryptedMessage := r.Decrypt(cipherText)
@@ -90,37 +88,4 @@ func GenerateECCertificate() *certificate {
 func TestWriteECCertificate(t *testing.T) {
 	cert := GenerateECCertificate()
 	CertificateWriteToJson(cert)
-}
-
-func TestGenAndExecKeygen(t *testing.T) {
-	extractBinaryFile()
-	publicKeyFileName := "rsapub"
-	privateKeyFileName := "rsapriv"
-	savePrivateAndPublicFiles(publicKeyFileName, privateKeyFileName, "rsa", t)
-	publicKeyFileName = "ecpub"
-	privateKeyFileName = "ecpriv"
-	savePrivateAndPublicFiles(publicKeyFileName, privateKeyFileName, "ec", t)
-}
-
-func savePrivateAndPublicFiles(publicKeyFileName, privateKeyFileName, algorithmType string, t *testing.T) {
-	publicKeyFilePath, privateKeyFilePath := runKeygen(publicKeyFileName, privateKeyFileName, algorithmType)
-	matchesPubKey, _ := filepath.Glob(publicKeyFilePath)
-	matchesPrivKey, _ := filepath.Glob(privateKeyFilePath)
-	assert.Equal(t, 1, len(matchesPubKey))
-	assert.Equal(t, 1, len(matchesPrivKey))
-}
-
-func runKeygen(publicKeyFileName, privateKeyFileName, algorithmType string) (string, string) {
-	targetDir := "testData/"
-	publicKeyFilePath := targetDir + publicKeyFileName
-	privateKeyFilePath := targetDir + privateKeyFileName
-	subjectName := "cryptoKitty"
-	cmdKeygenReadInputs := exec.Command("./keygen", "-t", algorithmType, "-s", subjectName, "-pub", publicKeyFilePath, "-priv", privateKeyFilePath)
-	_ = cmdKeygenReadInputs.Run()
-	return publicKeyFilePath, privateKeyFilePath
-}
-
-func extractBinaryFile() {
-	cmdGenerationKeygen := exec.Command("go", "build", "keygen.go", "Cipher.go", "certificate.go", "ECCipher.go", "RSACipher.go")
-	_ = cmdGenerationKeygen.Run()
 }
