@@ -15,8 +15,17 @@
 ## `keygen` generation
 
 ```bash
-go build keygen.go Cipher.go certificate.go ECCipher.go RSACipher.go
+make build
 ```
+
+## `keygen` test
+
+```bash
+make test
+```
+
+
+
 
 ## `keygen` utilization
 
