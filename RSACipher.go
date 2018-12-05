@@ -5,7 +5,12 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
+	"encoding/json"
+	"io/ioutil"
+	"math/big"
+	"os"
 	"strconv"
+	"strings"
 )
 
 type RSACipher struct {
@@ -28,7 +33,8 @@ func (cipher *RSACipher) getPublicKeyData() string {
 }
 
 func (cipher *RSACipher) getPrivateKeyData() string {
-	return cipher.privKey.D.String()
+	return cipher.getPublicKeyData() +
+		";" + cipher.privKey.D.String()
 }
 
 func (cipher *RSACipher) getPrivateKey() interface{} {
@@ -63,4 +69,34 @@ func (cipher *RSACipher) Decrypt(cipherText []byte) []byte {
 	label := []byte("orders")
 	plainText, _ := rsa.DecryptOAEP(sha256.New(), rand.Reader, &cipher.privKey, cipherText, label)
 	return plainText
+}
+
+func (cipher *RSACipher) getPublicKeyFromFile(filePath string) {
+	var certFromJsonFile certificate
+	var E int
+	N := new(big.Int)
+
+	jsonFile, _ := os.Open(filePath)
+	jsonContent, _ := ioutil.ReadAll(jsonFile)
+	_ = json.Unmarshal(jsonContent, &certFromJsonFile)
+	publicKeyEle := strings.Split(certFromJsonFile.PublicKeyData, ";")
+	_, _ = N.SetString(publicKeyEle[1], 10)
+	E, _ = strconv.Atoi(publicKeyEle[2])
+	cipher.pubKey = rsa.PublicKey{N, E}
+}
+
+func (cipher *RSACipher) getPrivateKeyFromFile(filePath string) {
+	var E int
+	N := new(big.Int)
+	D := new(big.Int)
+	privateKeyContent, _ := ioutil.ReadFile(filePath)
+	privateKeyElements := strings.Split(string(privateKeyContent), ";")
+	if privateKeyElements[0] != "RSA Encryption" {
+		panic("Cipher Type does not match!")
+	}
+	_, _ = N.SetString(privateKeyElements[2], 10)
+	E, _ = strconv.Atoi(privateKeyElements[3])
+	_, _ = D.SetString(privateKeyElements[4], 10)
+	cipher.pubKey = rsa.PublicKey{N, E}
+	cipher.privKey = rsa.PrivateKey{PublicKey: rsa.PublicKey{N, E}, D: D}
 }

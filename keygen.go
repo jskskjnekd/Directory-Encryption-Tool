@@ -7,6 +7,8 @@ import (
 )
 
 func main() {
+	//golangVersionInfo := runtime.Version()
+	//fmt.Println("ver")
 	logger, cmd, cipher := generateLoggerCmdCipher()
 	cmd.exportPublicKeyToCertificateFile(cipher)
 	cmd.writePrivateKeyToFile(cipher)
@@ -24,7 +26,6 @@ func closeLogger(logger *log.Logger) {
 	logger.Println("\n...........END...............")
 }
 
-
 func readFromCmdInputs() (*log.Logger, *Cmd) {
 	logger := createLogger()
 	cmd := &Cmd{}
@@ -32,7 +33,6 @@ func readFromCmdInputs() (*log.Logger, *Cmd) {
 	flag.Parse()
 	return logger, cmd
 }
-
 
 func createLogger() *log.Logger {
 	loggerFile, err := os.OpenFile("text.log",
