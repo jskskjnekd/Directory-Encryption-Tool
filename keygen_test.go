@@ -117,3 +117,31 @@ func TestReadECPrivateKeyAndPublicKey(t *testing.T) {
 	ec.getPrivateKeyFromFile(filePath)
 	assert.Equal(t, "42959308427456482066000506741001434821838233333725386843040209036964842026452;58455881548121703908827263112628762219990967672922710811232574208307069287946", ec.getPublicKeyData())
 }
+
+func TestReadECPublicKeyAndEncryptionThenDecryption(t *testing.T) {
+	var r RSACipher
+	filePath := "testData/unitTestRSApub"
+	r.getPublicKeyFromFile(filePath)
+	AesKeyLength := 32
+	AesKey := generateAESKeyForTestONLY(AesKeyLength)
+	cipherText := r.Encrypt(AesKey)
+	var rFromPrivateKeyFile RSACipher
+	privateFilePath := "testData/unitTestRSApriv"
+	rFromPrivateKeyFile.getPrivateKeyFromFile(privateFilePath)
+	decryptedMessage := rFromPrivateKeyFile.Decrypt(cipherText)
+	assert.Equal(t, AesKey, decryptedMessage)
+}
+
+func TestReadFilesConstructEC_Sign_and_verify(t *testing.T) {
+	var ec_fromPub ECCipher
+	var ec_fromPriv ECCipher
+	privateKeyFile := "testData/unitTestECpriv"
+	publicKeyFile := "testData/unitTestECpub"
+	ec_fromPub.getPublicKeyFromFile(publicKeyFile)
+	ec_fromPriv.getPrivateKeyFromFile(privateKeyFile)
+	messageFromAlice := []byte("This is a message from Alice")
+	messageFromBob := []byte("This is a message from Bob")
+	signaturefromaliceR, signaturefromaliceS := ec_fromPriv.Sign(messageFromAlice)
+	assert.Equal(t, true, ec_fromPub.VerifySignature(messageFromAlice, signaturefromaliceR, signaturefromaliceS))
+	assert.Equal(t, false, ec_fromPub.VerifySignature(messageFromBob, signaturefromaliceR, signaturefromaliceS))
+}

@@ -72,8 +72,14 @@ func (ec *ECCipher) getPrivateKeyFromFile(filePath string) {
 	_, _ = D.SetString(privateKeyEle[1], 10)
 	ec.EllipticCurve = elliptic.P256()
 	D_bytes := D.Bytes()
-	//fmt.Println(D_bytes)
 	tempX, tempY := ec.EllipticCurve.ScalarBaseMult(D_bytes)
-	ec.publicKey = &ecdsa.PublicKey{X: tempX, Y: tempY}
-	ec.privateKey = &ecdsa.PrivateKey{ecdsa.PublicKey{X: tempX, Y: tempY}, D}
+	ec.publicKey = &ecdsa.PublicKey{
+		Curve: elliptic.P256(),
+		X:     tempX,
+		Y:     tempY,
+	}
+	ec.privateKey = &ecdsa.PrivateKey{
+		PublicKey: *ec.publicKey,
+		D:         D,
+	}
 }
