@@ -1,39 +1,111 @@
 package main
 
 import (
-	"fmt"
 	"flag"
 	"log"
-	"math/rand"
 	"os"
+	"strings"
 )
 
 func main() {
 	logger, locker := readFromLockInputs()
-	//	locker.exportPublicKeyToCertificateFile(cipher)
-	//	writePrivateKeyToFile(cipher, )
+	//
+	// get pubkeypath
+	//
+	pubKeyPath := locker.publicKeyFilePath
+	//
+	// validate pubkey subject
+	//
+	locker.validatePubKeyFileSubject(pubKeyPath)
+	//
+	// create keyfile in current directory if it doesn't exist
+	//
+	createNamedfile(locker.directoryPath,"keyfile")
+	//
+	// generate aes key, encrypt and export to keyfile
+	//
+	aes := locker.generateAESKey(32)
+	cipherAes := locker.encryptedAES(aes)
+	locker.exportEncryptedAES(cipherAes)
+	//
+	// export keyfile signature
+	//
+	createKeySigFile(locker.directoryPath)
+	//
+	//
+	//
+	locker.exportKeyfileSignature()
+	//
+	// filewalk, getting list of files in directory
+	//
+	fileList := locker.fileWalkRecursive(locker.directoryPath)
+	//
+	// encrypt the files in this list.
+	//
+	for _,file := range fileList {
+		locker.encryptFileAndReplace(file,aes)
+	}
+	//
+	//
+	//
 	closelockLogger(logger)
-	locker.generateCipher("ec")
-	locker.generateCipher("rsa")
-
-	result := locker.getPubKeyJSONMap()
-
-	fmt.Println(result["users"])
-
+	//
+	//
+	//
 }
+//
+// if keyfile exists, do nothing, else create keyfile
+//
+func createNamedfile(filedir string, name string) {
 
-func generateAESKey(length int) []byte {
-	Aes_key := make([]byte, length)
-	_, _ = rand.Read(Aes_key)
-	return Aes_key
+	var dirPath string
+	//
+	// - - - - - - append keyfile to path
+	//
+	tempDirPath := strings.Split(filedir,"/")
+	tempDirPath = append(tempDirPath,name)
+	dirPath = strings.Join(tempDirPath,"/")
+
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		// path/to/whatever does not exist
+		//
+		//
+		outFile, _ := os.Create(dirPath)
+		defer outFile.Close()
+		_ = outFile.Sync()
+		outFile.Close()
+	}
 }
+func createKeySigFile(filepath string) {
+	var dirPath string
+	//
+	// - - - - - - append keyfile to path
+	//
+	tempDirPath := strings.Split(filepath,"/")
+	tempDirPath = append(tempDirPath,"keyfile.sig")
+	dirPath = strings.Join(tempDirPath,"/")
 
-//func generateLogLockerCipher() (*log.Logger, *Locker, Cipher) {
-//	logger, locker := readFromLockInputs()
-//	logger.Println(locker)
-//	cipher := locker.generateCipher()
-//	return logger, locker
-//}
+
+
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		// path/to/whatever does not exist
+		//
+		//
+		outFile, _ := os.Create(dirPath)
+		defer outFile.Close()
+		_ = outFile.Sync()
+		outFile.Close()
+	} else {
+		// path exists
+		//
+		//
+		os.Remove(dirPath)
+		outFile, _ := os.Create(dirPath)
+		defer outFile.Close()
+		_ = outFile.Sync()
+		outFile.Close()
+	}
+}
 
 func readFromLockInputs() ( *log.Logger, *Locker) {
 	logger := createlockLogger()

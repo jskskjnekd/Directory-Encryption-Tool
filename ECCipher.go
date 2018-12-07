@@ -81,5 +81,6 @@ func (ec *ECCipher) getPrivateKeyFromFile(filePath string) {
 	ec.privateKey = &ecdsa.PrivateKey{
 		PublicKey: *ec.publicKey,
 		D:         D,
+
 	}
 }

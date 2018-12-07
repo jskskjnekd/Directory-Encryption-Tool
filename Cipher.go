@@ -5,4 +5,6 @@ type Cipher interface {
 	getPublicKeyAlgorithm() string
 	getPublicKeyData() string
 	getPrivateKeyData() string
+	getPrivateKeyFromFile(filePath string)
+	getPublicKeyFromFile(filePath string)
 }

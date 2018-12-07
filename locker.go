@@ -6,13 +6,23 @@ import (
     "encoding/json"
     "fmt"
     "io/ioutil"
+    "crypto/rand"
+	"strings"
+	"crypto/aes"
+	"io"
+	"crypto/cipher"
+	"log"
 )
 
 type Locker struct {
     Cmd
     directoryPath string
     keyFilePath string
+    pubkey string
+    privkey string
 }
+
+
 
 func (locker *Locker) fetchJsonMap(path string ) map[string]interface{} {
     jsonFile, err := os.Open(path)
@@ -43,19 +53,162 @@ func (locker *Locker) setFlagParameters() {
     flag.StringVar(&locker.privateKeyFilePath, "r", "", "Private Key File Path")
     flag.StringVar(&locker.Subject, "s", "", "Subject Name")
 }
+//
+//
+//
+//
+// - - - - - - - - - - - - - - - - - - - - - - - - -- - - - GENERATE AES KEY
+//
+func (locker *Locker) generateAESKey(length int) []byte {
+    AESkey := make([]byte, length)
+    _, _ = rand.Read(AESkey)
+    return AESkey
+}
+//
+// - - - - - - - - - - - - - - - - - - - - - -- - - - - - -ENCRYPT AES KEY
+//
+func (locker *Locker) encryptedAES(aeskey []byte) []byte {
+    //
+    //- - - - - - -using locker.publickey. encrypt AES
+    //
+    var aesKeyCipherText []byte
+    var cipher RSACipher
+	//
+	//- - - - - - - read public key from file, and use to encrypt aeskey
+	//
+	cipher.getPublicKeyFromFile(locker.publicKeyFilePath)
+	aesKeyCipherText = cipher.Encrypt(aeskey)
+	//
+	//
+	//
+	return aesKeyCipherText
+}
+//
+// - - - - - - - - - - - - - - - - - - - - - -- - - - - - -export encrypted AES key to keyfile in directory.
+//
+func (locker *Locker) exportEncryptedAES(aeskeyCiphertext []byte) {
+	//
+	// - - - - - - - - -  - - - - open keyfile
+	//
+	keyFilePath := locker.getKeyfilePath()
+	locker.writeBytes(keyFilePath,aeskeyCiphertext)
+}
+//
+// - - - - - - - - - - - -  - - - - -- - - - - return keyfile path string
+//
+func (locker *Locker) getKeyfilePath() string {
+	var dirPath string
+	dirPath = locker.directoryPath
+	//
+	// - - - - - - append keyfile to path
+	//
+	tempDirPath := strings.Split(dirPath,"/")
+	tempDirPath = append(tempDirPath,"keyfile")
+	dirPath = strings.Join(tempDirPath,"/")
 
-func (locker *Locker) generateCipher(name string) Cipher {
-    var cipher Cipher
-    if name == "ec" {
-        locker.AlgorithmType = "ec"
-        cipher = locker.generateECCipher(cipher)
-    } else if name == "rsa"  {
-        locker.AlgorithmType = "rsa"
-        cipher = locker.generateRSACipher(cipher)
-    } else {
-        panic("Algorithm Not Specified! You can ONLY pick ec or RSA.")
-    }
-    return cipher
+	return dirPath
+}
+//
+// - - - - - - - - - - - -  - - - - -- - - - - - keyfile.sig
+//
+func (locker *Locker) exportKeyfileSignature() {
+	//
+	// - - - - - - - sign keyfile
+	//
+	N,e := locker.sign(locker.getKeyfilePath())
+	locker.writeSigString(N,e)
+}
+
+//
+//- - - -- - - - - - - - - - - - SIGN the keyfile uses private key
+//
+func (locker *Locker) sign(filepath string) (N string, e string) {
+	//
+	// - - - - - -extract cipher with private signature
+	//
+	var cipher ECCipher
+	cipher.getPrivateKeyFromFile(locker.privateKeyFilePath)
+	//
+	// - - - - - -get file contents and sign, returning signature
+	//
+	fileContents := locker.getFileBytes(filepath)
+	pN,pE := cipher.Sign(fileContents)
+
+	return pN.String(),pE.String()
+}
+//
+//
+//
+func (locker *Locker) writeSigString( N string, e string) {
+
+	var sigFilePath string
+	tempSigFile := strings.Split(locker.directoryPath,"/")
+	tempSigFile = append(tempSigFile,"keyfile.sig")
+	sigFilePath = strings.Join(tempSigFile,"/")
+	output := N +";"+"e"
+	var signature []byte
+	signature = []byte(output)
+	locker.writeBytes(sigFilePath,signature)
+
+}
+//
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -- -ENCRYPT FILE AND REPLACE
+//
+func (locker *Locker) encryptFileAndReplace(filename string,aesKey []byte) {
+	//
+	//
+	//
+	if !strings.Contains(filename,"keyfile") || !strings.Contains(filename,"keyfile.sig") {
+	//
+	// - - - read plaintext into memory buffer
+	//
+	file,_ := os.Open(filename)
+	plaintext,_ := ioutil.ReadAll(file)
+	//
+	// - - - -DELETE FILE
+	//
+	file.Close()
+	err := os.Remove(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//
+	// - - - CREATE STRONG PSF
+	//
+	block, err := aes.NewCipher(aesKey)
+	if err != nil {
+		panic(err.Error())
+	}
+	//
+	// - - -  Never use more than 2^32 random nonces with a given key because of the risk of a repeat.
+	//
+	nonce := make([]byte, 12)
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		panic(err.Error())
+	}
+	//
+	//- - - - CREATE BLOCK CIPHER
+	//
+	aesgcm, err := cipher.NewGCM(block)
+	if err != nil {
+		panic(err.Error())
+	}
+	//
+	// - - - -ENCRYPT
+	//
+	ciphertext := aesgcm.Seal(nil, nonce, plaintext, nil)
+	//
+	// CREATE NEW FILE
+	//
+	//
+	//- - - - - - - write aes ciphertext to file
+	//
+	outFile, _ := os.Create(filename)
+	defer outFile.Close()
+	_, _ = outFile.Write(ciphertext)
+	_ = outFile.Sync()
+	outFile.Close()
+	}
 }
 
 
