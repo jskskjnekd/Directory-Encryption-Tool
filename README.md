@@ -21,6 +21,19 @@ make build
 ## `keygen` test
 
 ```bash
+Lock and locker are working. Unlock.go and Unlocker.go should be nearly identical except unlocker.go should have the following steps
+1. Validate subject (same as locker.go)
+
+2. verify signature in keyfile.sig
+
+3. read aeskey (ciphertext) from keyfile and store
+
+4. delete keyfile and keyfile.sig
+
+5. decrypt files and replace.
+
+Can you please create a methods for 2 and 3? I can do the rest. 
+
 make test
 ```
 
