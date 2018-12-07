@@ -2,7 +2,7 @@
 Lock and locker are working. Unlock.go and Unlocker.go should be nearly identical except unlocker.go should have the following steps
 1. Validate subject (same as locker.go)
 
-2. verify signature in keyfile.sig
+2. verify signature in keyfile.sig with only command line inputs -p and -d 
 
 3. read aeskey (ciphertext) from keyfile and store
 
@@ -10,7 +10,7 @@ Lock and locker are working. Unlock.go and Unlocker.go should be nearly identica
 
 5. decrypt files and replace.
 
-Can you please create a methods for 2 and 3? I can do the rest.
+Can you please create a methods for 2 and 3? I can do the rest, because it is nearly identical to what I have written for lock & unlock.
 
 
 
