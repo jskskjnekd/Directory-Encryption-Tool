@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"math/rand"
 	"testing"
 )
@@ -144,4 +145,23 @@ func TestReadFilesConstructEC_Sign_and_verify(t *testing.T) {
 	signaturefromaliceR, signaturefromaliceS := ec_fromPriv.Sign(messageFromAlice)
 	assert.Equal(t, true, ec_fromPub.VerifySignature(messageFromAlice, signaturefromaliceR, signaturefromaliceS))
 	assert.Equal(t, false, ec_fromPub.VerifySignature(messageFromBob, signaturefromaliceR, signaturefromaliceS))
+}
+
+func TestReadKeyfileAndSignatureToVerify(t *testing.T) {
+	AesKeyLength := 32
+	directoryPath := "testData/testDirectory_1/"
+	keyFile_enc_Path := directoryPath + "keyfile"
+	keyFile_sig_Path := directoryPath + "keyfile.sig"
+	AesKey := generateAESKeyForTestONLY(AesKeyLength)
+	r := GenerateRSACipher()
+	cipherText := r.Encrypt(AesKey)
+	_ = ioutil.WriteFile(keyFile_enc_Path, cipherText, 0644)
+	var ec ECCipher
+	privKeyfilePath := "testData/testDirectory_1/samplePrivateKeyFile"
+	pubKeyfilePath := "testData/testDirectory_1/samplePublicKeyFile"
+	ec.getPrivateKeyFromFile(privKeyfilePath)
+	signature_r, signature_s := ec.Sign(cipherText)
+	signatureWholeInfo := signature_r.String() + ";" + signature_s.String()
+	_ = ioutil.WriteFile(keyFile_sig_Path, []byte(signatureWholeInfo), 0644)
+	assert.Equal(t, true, readKeyfileAndSignature(directoryPath, pubKeyfilePath))
 }
