@@ -109,7 +109,22 @@ func (locker *Locker) getKeyfilePath() string {
 	return dirPath
 }
 //
-// - - - - - - - - - - - -  - - - - -- - - - - - keyfile.sig
+// - - - - - - - - - - - -  - - - - - - - - - - return keyfile.sig path string
+//
+func (locker *Locker) getKeySigfilePath() string {
+	var dirPath string
+	dirPath = locker.directoryPath
+	//
+	// - - - - - - append keyfile.sig to path
+	//
+	tempDirPath := strings.Split(dirPath,"/")
+	tempDirPath = append(tempDirPath,"keyfile.sig")
+	dirPath = strings.Join(tempDirPath,"/")
+
+	return dirPath
+}
+//
+// - - - - - - - - - - - -  - - - - - - - - - - - keyfile.sig
 //
 func (locker *Locker) exportKeyfileSignature() {
 	//
@@ -118,11 +133,10 @@ func (locker *Locker) exportKeyfileSignature() {
 	N,e := locker.sign(locker.getKeyfilePath())
 	locker.writeSigString(N,e)
 }
-
 //
-//- - - -- - - - - - - - - - - - SIGN the keyfile uses private key
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - SIGN the keyfile uses private key
 //
-func (locker *Locker) sign(filepath string) (N string, e string) {
+func (locker *Locker) sign(filepath string) (r string, s string) {
 	//
 	// - - - - - -extract cipher with private signature
 	//
@@ -132,20 +146,20 @@ func (locker *Locker) sign(filepath string) (N string, e string) {
 	// - - - - - -get file contents and sign, returning signature
 	//
 	fileContents := locker.getFileBytes(filepath)
-	pN,pE := cipher.Sign(fileContents)
+	pR,pS := cipher.Sign(fileContents)
 
-	return pN.String(),pE.String()
+	return pR.String(),pS.String()
 }
 //
+//- - - - - - - - - - - - - - - - - - convert string sig to bytes and write to keyfile.sig (ASSUMES keyfile.sig EXISTS ALREADY)
 //
-//
-func (locker *Locker) writeSigString( N string, e string) {
+func (locker *Locker) writeSigString( r string, s string) {
 
 	var sigFilePath string
 	tempSigFile := strings.Split(locker.directoryPath,"/")
 	tempSigFile = append(tempSigFile,"keyfile.sig")
 	sigFilePath = strings.Join(tempSigFile,"/")
-	output := N +";"+"e"
+	output := r +";"+s
 	var signature []byte
 	signature = []byte(output)
 	locker.writeBytes(sigFilePath,signature)
