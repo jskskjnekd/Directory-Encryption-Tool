@@ -106,16 +106,16 @@ func TestReadRSAPrivateKeyAndPublicKey(t *testing.T) {
 
 func TestReadECPublicKeyOnly(t *testing.T) {
 	var ec ECCipher
-	filePath := "testData/unitTestECpub"
+	filePath := "testData/.unitTestECpub.test"
 	ec.getPublicKeyFromFile(filePath)
-	assert.Equal(t, "42959308427456482066000506741001434821838233333725386843040209036964842026452;58455881548121703908827263112628762219990967672922710811232574208307069287946", ec.getPublicKeyData())
+	assert.Equal(t, "72855006401331500571293205713422213632199025582122586413596290165604600288481;64386143128833081560152641468513655202877491506581534903625174423836821803203", ec.getPublicKeyData())
 }
 
 func TestReadECPrivateKeyAndPublicKey(t *testing.T) {
 	var ec ECCipher
-	filePath := "testData/unitTestECpriv"
+	filePath := "testData/.unitTestECpriv.test"
 	ec.getPrivateKeyFromFile(filePath)
-	assert.Equal(t, "42959308427456482066000506741001434821838233333725386843040209036964842026452;58455881548121703908827263112628762219990967672922710811232574208307069287946", ec.getPublicKeyData())
+	assert.Equal(t, "72855006401331500571293205713422213632199025582122586413596290165604600288481;64386143128833081560152641468513655202877491506581534903625174423836821803203", ec.getPublicKeyData())
 }
 
 func TestReadECPublicKeyAndEncryptionThenDecryption(t *testing.T) {
@@ -135,8 +135,8 @@ func TestReadECPublicKeyAndEncryptionThenDecryption(t *testing.T) {
 func TestReadFilesConstructEC_Sign_and_verify(t *testing.T) {
 	var ec_fromPub ECCipher
 	var ec_fromPriv ECCipher
-	privateKeyFile := "testData/unitTestECpriv"
-	publicKeyFile := "testData/unitTestECpub"
+	privateKeyFile := "testData/.unitTestECpriv.test"
+	publicKeyFile := "testData/.unitTestECpub.test"
 	ec_fromPub.getPublicKeyFromFile(publicKeyFile)
 	ec_fromPriv.getPrivateKeyFromFile(privateKeyFile)
 	messageFromAlice := []byte("This is a message from Alice")
