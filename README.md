@@ -1,19 +1,4 @@
 
-Lock and locker are working. Unlock.go and Unlocker.go should be nearly identical except unlocker.go should have the following steps
-1. Validate subject (same as locker.go)
-
-2. verify signature in keyfile.sig with only command line inputs -p and -d 
-
-3. read aeskey (ciphertext) from keyfile and store
-
-4. delete keyfile and keyfile.sig
-
-5. decrypt files and replace.
-
-Can you please create a methods for 2 and 3? I can do the rest, because it is nearly identical to what I have written for lock & unlock.
-
-
-
 # Directory Encryption/Decryption Tool
 
 
@@ -81,6 +66,13 @@ cat kRSApub
     "PublicKeyData":"256;29324699379032198838351362863757370213424148463892434594196911948340987666307424669461060015703437819991152335003595119793495910467951811108430320243432928405358104395319796059777248192339996483370669542794042057942332978863369162740127130100609729713662429900618426402447463012563457416122093358816331097885258455256829012597300621530135531996525075052327607474415584560716526979814182339973796650585274161231859299374468125353142391853850583371450024153197957982485885356944214920014355925617080270937010725560635376296510630599267091705378343646359694771599146069407885012398264814702029663196692413455687777481141;65537"
 }
 ```
+##
+How to use lock & unlock:
+```bash 
+sh setupTest.sh
+```
+This script generates a directory with testfiles each containing random strings of chars. The executables will encrypt, then decrypt all of these. 
+
 
 
 
