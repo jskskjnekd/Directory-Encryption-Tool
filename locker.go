@@ -12,6 +12,7 @@ import (
 	"io"
 	"crypto/cipher"
 	"log"
+	"math/big"
 )
 
 type Locker struct {
@@ -60,6 +61,7 @@ func (locker *Locker) setFlagParameters() {
 // - - - - - - - - - - - - - - - - - - - - - - - - -- - - - GENERATE AES KEY
 //
 func (locker *Locker) generateAESKey(length int) []byte {
+
     AESkey := make([]byte, length)
     _, _ = rand.Read(AESkey)
     return AESkey
@@ -130,13 +132,13 @@ func (locker *Locker) exportKeyfileSignature() {
 	//
 	// - - - - - - - sign keyfile
 	//
-	N,e := locker.sign(locker.getKeyfilePath())
-	locker.writeSigString(N,e)
+	r,s := locker.sign(locker.getKeyfilePath())
+	locker.writeSigString(r,s)
 }
 //
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - SIGN the keyfile uses private key
 //
-func (locker *Locker) sign(filepath string) (r string, s string) {
+func (locker *Locker) sign(filepath string) (r , s *big.Int) {
 	//
 	// - - - - - -extract cipher with private signature
 	//
@@ -146,20 +148,23 @@ func (locker *Locker) sign(filepath string) (r string, s string) {
 	// - - - - - -get file contents and sign, returning signature
 	//
 	fileContents := locker.getFileBytes(filepath)
-	pR,pS := cipher.Sign(fileContents)
+	R,S := cipher.Sign(fileContents)
 
-	return pR.String(),pS.String()
+
+	return R,S
 }
 //
 //- - - - - - - - - - - - - - - - - - convert string sig to bytes and write to keyfile.sig (ASSUMES keyfile.sig EXISTS ALREADY)
 //
-func (locker *Locker) writeSigString( r string, s string) {
+func (locker *Locker) writeSigString( r, s *big.Int) {
 
 	var sigFilePath string
 	tempSigFile := strings.Split(locker.directoryPath,"/")
 	tempSigFile = append(tempSigFile,"keyfile.sig")
 	sigFilePath = strings.Join(tempSigFile,"/")
-	output := r +";"+s
+	//
+	output := r.String()+";"+s.String()
+	//
 	var signature []byte
 	signature = []byte(output)
 	locker.writeBytes(sigFilePath,signature)
@@ -187,30 +192,19 @@ func (locker *Locker) encryptFileAndReplace(filename string,aesKey []byte) {
 		log.Fatal(err)
 	}
 	//
-	// - - - CREATE STRONG PSF
+	// - - - ENCRYPT
 	//
-	block, err := aes.NewCipher(aesKey)
+	block, _ := aes.NewCipher(aesKey)
+	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		panic(err.Error())
 	}
-	//
-	// - - -  Never use more than 2^32 random nonces with a given key because of the risk of a repeat.
-	//
-	nonce := make([]byte, 12)
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
 		panic(err.Error())
 	}
-	//
-	//- - - - CREATE BLOCK CIPHER
-	//
-	aesgcm, err := cipher.NewGCM(block)
-	if err != nil {
-		panic(err.Error())
-	}
-	//
-	// - - - -ENCRYPT
-	//
-	ciphertext := aesgcm.Seal(nil, nonce, plaintext, nil)
+	ciphertext := gcm.Seal(nonce, nonce, plaintext, nil)
+	//fmt.Print(string(ciphertext))
 	//
 	// CREATE NEW FILE
 	//

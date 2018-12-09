@@ -8,8 +8,10 @@ import (
 )
 
 func main() {
-	return
-	logger, unlocker := readFromUnlockInputs()
+	_, unlocker := readFromUnlockInputs()
+
+
+
 	//
 	// get pubkeypath
 	//
@@ -24,6 +26,7 @@ func main() {
 	var isValidSig bool
 	isValidSig = unlocker.readSigAndValidate(unlocker.directoryPath,pubKeyPath)
 	if !isValidSig {
+
 		return
 	}
 	//
@@ -31,6 +34,8 @@ func main() {
 	//
 	var aes []byte
 	aes = unlocker.importEncryptedAES()
+
+
 	//
 	// filewalk, getting list of files in directory
 	//
@@ -38,13 +43,10 @@ func main() {
 	//
 	// decrypt the files in this list.
 	//
+
 	for _,file := range fileList {
 		unlocker.decryptFileAndReplace(file,aes)
 	}
-	//
-	// close the logger
-	//
-	closelockLogger(logger)
 }
 //
 // if keyfile exists, do nothing, else create keyfile
@@ -71,23 +73,23 @@ func createKeyfile(filename string) {
 }
 
 func readFromUnlockInputs() ( *log.Logger, *Unlocker) {
-	logger := createlockLogger()
+	logger := createunlockLogger()
 	u := &Unlocker{}
 	u.setFlagParameters()
 	flag.Parse()
 	return logger, u
 }
 
-func closelockLogger(logger *log.Logger) {
+func closeunlockLogger(logger *log.Logger) {
 	logger.Println("\n...........END...............")
 }
 
 
-func createlockLogger() *log.Logger {
+func createunlockLogger() *log.Logger {
 	loggerFile, err := os.OpenFile("text.log",
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Println(err)
+
 	}
 	logger := log.New(loggerFile, "Keygen|", log.LstdFlags)
 	logger.Println("\n\n\n------------------------Log File Created----------------------")

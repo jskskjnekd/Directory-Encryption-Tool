@@ -6,10 +6,8 @@ import (
     "encoding/json"
     "fmt"
     "io/ioutil"
-    "crypto/rand"
 	"strings"
 	"crypto/aes"
-	"io"
 	"crypto/cipher"
 	"log"
 	"math/big"
@@ -56,18 +54,26 @@ func (unlocker *Unlocker) setFlagParameters() {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - read keyfile.sig and verify signature, return boolean
 //
 func (unlocker *Unlocker) readSigAndValidate(directoryPath, pubKeyfilePath string) bool {
+
 	//
 	// - - - - - create keyfile path
 	//
+
 	keyfilePath := unlocker.getKeyfilePath()
+
+
 	//
 	// - - - - - create keyfile.sig path
 	//
+
 	keyfileSigPath := unlocker.getKeySigfilePath()
+
+
 	//
 	// - - - - - read signature and verify
 	//
 	signature, _ := ioutil.ReadFile(keyfileSigPath)
+
 	ele := strings.Split(string(signature), ";")
 	r := new(big.Int)
 	s := new(big.Int)
@@ -76,6 +82,7 @@ func (unlocker *Unlocker) readSigAndValidate(directoryPath, pubKeyfilePath strin
 	var ec_fromPub ECCipher
 	ec_fromPub.getPublicKeyFromFile(pubKeyfilePath)
 	message, _ := ioutil.ReadFile(keyfilePath)
+
 	return ec_fromPub.VerifySignature(message, r, s)
 }
 //
@@ -136,55 +143,50 @@ func (unlocker *Unlocker) getKeySigfilePath() string {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -DECRYPT FILE AND REPLACE
 //
 func (unlocker *Unlocker) decryptFileAndReplace(filename string,aesKey []byte) {
-	//
-	// - - - read plaintext into memory buffer
-	//
-	file,_ := os.Open(filename)
-	ciphertext,_ := ioutil.ReadAll(file)
-	//
-	// - - - -DELETE FILE
-	//
-	file.Close()
-	err := os.Remove(filename)
-	if err != nil {
-		log.Fatal(err)
+	if !strings.Contains(filename,"keyfile") || !strings.Contains(filename,"keyfile.sig") {
+		//
+		// - - - read plaintext into memory buffer
+		//
+
+		file, _ := os.Open(filename)
+		ciphertext, _ := ioutil.ReadAll(file)
+
+		//
+		//
+		//
+		block, err := aes.NewCipher(aesKey)
+		if err != nil {
+			panic(err.Error())
+		}
+		gcm, err := cipher.NewGCM(block)
+		if err != nil {
+			panic(err.Error())
+		}
+		nonceSize := gcm.NonceSize()
+		nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
+		plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+		if err != nil {
+			panic(err.Error())
+		}
+		//
+		// - - - -DELETE FILE
+		//
+		file.Close()
+		os.Remove(filename)
+		if err != nil {
+			log.Fatal(err)
+		}
+		//
+		//
+		//- - - - - - - write aes plaintext to file
+		//
+
+		outFile, _ := os.Create(filename)
+		defer outFile.Close()
+		_, _ = outFile.Write(plaintext)
+		_ = outFile.Sync()
+		outFile.Close()
 	}
-	//
-	// - - - CREATE STRONG PSF
-	//
-	block, err := aes.NewCipher(aesKey)
-	if err != nil {
-		panic(err.Error())
-	}
-	//
-	// - - -  Never use more than 2^32 random nonces with a given key because of the risk of a repeat.
-	//
-	nonce :=  ciphertext[64:(64+24)]
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		panic(err.Error())
-	}
-	//
-	//- - - - CREATE BLOCK CIPHER
-	//
-	aesgcm, err := cipher.NewGCM(block)
-	if err != nil {
-		panic(err.Error())
-	}
-	//
-	// - - - -DECRYPT
-	//
-	plaintext,_ := aesgcm.Open(nil, nonce, ciphertext, aesKey)
-	//
-	// CREATE NEW FILE
-	//
-	//
-	//- - - - - - - write aes plaintext to file
-	//
-	outFile, _ := os.Create(filename)
-	defer outFile.Close()
-	_, _ = outFile.Write(plaintext)
-	_ = outFile.Sync()
-	outFile.Close()
 }
 
 

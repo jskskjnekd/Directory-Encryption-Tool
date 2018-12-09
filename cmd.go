@@ -7,6 +7,7 @@ import (
     "path/filepath"
     "log"
     "encoding/json"
+    "strings"
 )
 
 type Cmd struct {
@@ -142,18 +143,17 @@ func (cmd *Cmd) validatePubKeyFileSubject(filename string) bool{
 // - - - - - - - - - - - - RECURSIVELY WALK FILES STARTING AT ROOT
 //
 func (cmd *Cmd) fileWalkRecursive(searchDir string) []string {
-
-    var fileList []string
-    err := filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
-        if !f.IsDir() {
-            fileList = append(fileList, path)
+    fileList := []string{}
+    filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
+        if strings.Contains(path,"keyfile") || f.IsDir() {
+            return nil
         }
+
+        fileList = append(fileList, path)
         return nil
     })
-    if err != nil {
-        log.Fatal(err)
-    }
     return fileList
+
 }
 //
 // - - - - - - - - - - - - WRITE BYTES
@@ -170,11 +170,12 @@ func (cmd *Cmd) writeBytes(filename string, bytes []byte) {
     defer file.Close()
 
     // Write bytes to file
-    bytesWritten, err := file.Write(bytes)
+    file.Write(bytes)
     if err != nil {
         log.Fatal(err)
     }
-    log.Printf("Wrote %d bytes.\n", bytesWritten)
+
+
 }
 //
 // - - - - - - - - - - - -GET FILE BYTES

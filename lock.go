@@ -124,7 +124,7 @@ func createlockLogger() *log.Logger {
 	loggerFile, err := os.OpenFile("text.log",
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Println(err)
+		log.Print("error with lockLogger")
 	}
 	logger := log.New(loggerFile, "Keygen|", log.LstdFlags)
 	logger.Println("\n\n\n------------------------Log File Created----------------------")
