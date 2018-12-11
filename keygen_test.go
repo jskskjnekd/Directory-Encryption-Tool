@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"math/rand"
 	"testing"
 )
@@ -51,7 +50,7 @@ func TestWriteCertificate(t *testing.T) {
 
 func CertificateWriteToJson(cert *certificate) {
 	cert.exportJson()
-	certificateFilePath := "testData/"
+	certificateFilePath := ".testData/"
 	certificateFileName := "myX509Certificate"
 	cert.exportJsonToFile(certificateFilePath + certificateFileName)
 }
@@ -93,41 +92,41 @@ func TestWriteECCertificate(t *testing.T) {
 
 func TestReadRSAPublicKeyOnly(t *testing.T) {
 	var r RSACipher
-	filePath := "testData/unitTestRSApub"
+	filePath := ".testData/unitTestRSApub"
 	r.getPublicKeyFromFile(filePath)
 	assert.Equal(t, "256;26023832331713257274664441664392187466883042725358585720275956730147956071181952518736788753503245520018091472431298471955798654448589301155934277931240162176328640252080569832771810664621758643489083345172598021914700888333945962112020851927565219587419183397467185855105332892445955229511444317887564060487953991049237007601889670798204318122430929398590483512206219845564225686018203864750776335912499703496111958149689443194133537519829620331821610185016897280252409712240022577021507003468215361037772942784978964592190540530127987606419086408365472755528016251641560385132904849997624687825983210867659768250627;65537", r.getPublicKeyData())
 }
 
 func TestReadRSAPrivateKeyAndPublicKey(t *testing.T) {
 	var r RSACipher
-	filePath := "testData/unitTestRSApriv"
+	filePath := ".testData/unitTestRSApriv"
 	r.getPrivateKeyFromFile(filePath)
 	assert.Equal(t, "256;26023832331713257274664441664392187466883042725358585720275956730147956071181952518736788753503245520018091472431298471955798654448589301155934277931240162176328640252080569832771810664621758643489083345172598021914700888333945962112020851927565219587419183397467185855105332892445955229511444317887564060487953991049237007601889670798204318122430929398590483512206219845564225686018203864750776335912499703496111958149689443194133537519829620331821610185016897280252409712240022577021507003468215361037772942784978964592190540530127987606419086408365472755528016251641560385132904849997624687825983210867659768250627;65537;14628652259034078428958268320432857565649500190765678897950260859341298833671714158265762816104789126103826690943574403876460967543311867412066753116360034401573875930949664962377183955394137486093929084885766988530716705467485073228967578391008173849894299653061493917971229439213100853795590409554570090000523561267790915989895373370071171598212999383578634022107493959143360641003367894021562188018495271161422353318844927673352753237248986940336861460781245491176541321183824390259185249058423509952784064018544210169078407330554311000895232357211784690999626443333272079187320635216987495891116164028211752211073", r.getPrivateKeyData())
 }
 
 func TestReadECPublicKeyOnly(t *testing.T) {
 	var ec ECCipher
-	filePath := "testData/.unitTestECpub.test"
+	filePath := ".testData/.unitTestECpub.test"
 	ec.getPublicKeyFromFile(filePath)
 	assert.Equal(t, "72855006401331500571293205713422213632199025582122586413596290165604600288481;64386143128833081560152641468513655202877491506581534903625174423836821803203", ec.getPublicKeyData())
 }
 
 func TestReadECPrivateKeyAndPublicKey(t *testing.T) {
 	var ec ECCipher
-	filePath := "testData/.unitTestECpriv.test"
+	filePath := ".testData/.unitTestECpriv.test"
 	ec.getPrivateKeyFromFile(filePath)
 	assert.Equal(t, "72855006401331500571293205713422213632199025582122586413596290165604600288481;64386143128833081560152641468513655202877491506581534903625174423836821803203", ec.getPublicKeyData())
 }
 
 func TestReadECPublicKeyAndEncryptionThenDecryption(t *testing.T) {
 	var r RSACipher
-	filePath := "testData/unitTestRSApub"
+	filePath := ".testData/unitTestRSApub"
 	r.getPublicKeyFromFile(filePath)
 	AesKeyLength := 32
 	AesKey := generateAESKeyForTestONLY(AesKeyLength)
 	cipherText := r.Encrypt(AesKey)
 	var rFromPrivateKeyFile RSACipher
-	privateFilePath := "testData/unitTestRSApriv"
+	privateFilePath := ".testData/unitTestRSApriv"
 	rFromPrivateKeyFile.getPrivateKeyFromFile(privateFilePath)
 	decryptedMessage := rFromPrivateKeyFile.Decrypt(cipherText)
 	assert.Equal(t, AesKey, decryptedMessage)
@@ -136,8 +135,8 @@ func TestReadECPublicKeyAndEncryptionThenDecryption(t *testing.T) {
 func TestReadFilesConstructEC_Sign_and_verify(t *testing.T) {
 	var ec_fromPub ECCipher
 	var ec_fromPriv ECCipher
-	privateKeyFile := "testData/.unitTestECpriv.test"
-	publicKeyFile := "testData/.unitTestECpub.test"
+	privateKeyFile := ".testData/.unitTestECpriv.test"
+	publicKeyFile := ".testData/.unitTestECpub.test"
 	ec_fromPub.getPublicKeyFromFile(publicKeyFile)
 	ec_fromPriv.getPrivateKeyFromFile(privateKeyFile)
 	messageFromAlice := []byte("This is a message from Alice")
@@ -145,23 +144,4 @@ func TestReadFilesConstructEC_Sign_and_verify(t *testing.T) {
 	signaturefromaliceR, signaturefromaliceS := ec_fromPriv.Sign(messageFromAlice)
 	assert.Equal(t, true, ec_fromPub.VerifySignature(messageFromAlice, signaturefromaliceR, signaturefromaliceS))
 	assert.Equal(t, false, ec_fromPub.VerifySignature(messageFromBob, signaturefromaliceR, signaturefromaliceS))
-}
-
-func TestReadKeyfileAndSignatureToVerify(t *testing.T) {
-	AesKeyLength := 32
-	directoryPath := "testData/testDirectory_1/"
-	keyFile_enc_Path := directoryPath + "keyfile"
-	keyFile_sig_Path := directoryPath + "keyfile.sig"
-	AesKey := generateAESKeyForTestONLY(AesKeyLength)
-	r := GenerateRSACipher()
-	cipherText := r.Encrypt(AesKey)
-	_ = ioutil.WriteFile(keyFile_enc_Path, cipherText, 0644)
-	var ec ECCipher
-	privKeyfilePath := "testData/testDirectory_1/samplePrivateKeyFile"
-	pubKeyfilePath := "testData/testDirectory_1/samplePublicKeyFile"
-	ec.getPrivateKeyFromFile(privKeyfilePath)
-	signature_r, signature_s := ec.Sign(cipherText)
-	signatureWholeInfo := signature_r.String() + ";" + signature_s.String()
-	_ = ioutil.WriteFile(keyFile_sig_Path, []byte(signatureWholeInfo), 0644)
-	assert.Equal(t, true, readKeyfileAndSignature(directoryPath, pubKeyfilePath))
 }
