@@ -5,7 +5,7 @@ rm -rf testDirectory
 
 mkdir testData
 mkdir testData/lockingParty
-mkdir testDAta/unlockingParty
+mkdir testData/unlockingParty
 
 mkdir -p testDirectory/{A,B}/{{A1,A2},{B1,B2}}
 find testDirectory -type d -exec touch {}/TESTFILE \;
