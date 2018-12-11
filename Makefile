@@ -16,3 +16,7 @@ test:
 	./testSetup.sh
 clean:
 	rm -rf $(QUESTION1BINARY)
+	rm -rf $(QUESTION2BINARY_LOCK)
+	rm -rf $(QUESTION2BINARY_UNLOCK)
+	rm -rf testData
+	rm -rf testDirectory
