@@ -140,6 +140,27 @@ func (unlocker *Unlocker) getKeySigfilePath() string {
 	return dirPath
 }
 //
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - Delete the keyfiles
+//
+func (unlocker *Unlocker) deleteKeyfiles() {
+	var sigPath string
+	var keyfilePath string
+	sigPath = unlocker.getKeySigfilePath()
+	keyfilePath = unlocker.getKeyfilePath()
+	//
+	//
+	//
+	err := os.Remove(sigPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err2 := os.Remove(keyfilePath)
+	if err2 != nil {
+		log.Fatal(err)
+	}
+}
+//
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -DECRYPT FILE AND REPLACE
 //
 func (unlocker *Unlocker) decryptFileAndReplace(filename string,aesKey []byte) {

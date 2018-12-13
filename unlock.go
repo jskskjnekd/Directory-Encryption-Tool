@@ -47,6 +47,10 @@ func main() {
 	for _,file := range fileList {
 		unlocker.decryptFileAndReplace(file,aes)
 	}
+	//
+	// delete keyfile and keyfile.sig
+	//
+	unlocker.deleteKeyfiles()
 }
 //
 // if keyfile exists, do nothing, else create keyfile
