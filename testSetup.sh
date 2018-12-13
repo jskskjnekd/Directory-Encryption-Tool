@@ -11,7 +11,8 @@ mkdir -p testDirectory/{A,B}/{{A1,A2},{B1,B2}}
 find testDirectory -type d -exec touch {}/TESTFILE \;
 
 echo 'create files'
-find testDirectory -type f -name TESTFILE -exec sh -c 'pwgen 14 1  > "$1"' -- {} \;
+# dd if=/dev/random of=TESTFILE bs=10 count=50
+find testDirectory -type f -name TESTFILE -exec sh -c 'dd if=/dev/random of="$1" bs=10 count=50' -- {} \;
 
 ./keygen -t ec -s ATypicalSubjectName -pub testData/lockingParty/wECpub -priv testData/lockingParty/wECpriv
 ./keygen -t rsa -s ATypicalSubjectName -pub testData/lockingParty/wRSApub -priv testData/lockingParty/wRSApriv
