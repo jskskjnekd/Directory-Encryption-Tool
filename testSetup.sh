@@ -21,11 +21,11 @@ find testDirectory -type f -name TESTFILE -exec sh -c 'dd if=/dev/random of="$1"
 echo 'Before Encryption, the sha256 sum of the directory is'
 checksumdir testDirectory
 
-./lock -d testDirectory  -p testData/unlockingParty/wRSApub -r testData/lockingParty/wECpriv -s ANonTypicalSubjectName
+./lock -d testDirectory  -p testData/unlockingParty/wRSApub -r testData/lockingParty/wECpriv -s ATypicalSubjectName    #ANonTypicalSubjectName
 echo 'locked complete'
 #find testDirectory -type f -name TESTFILE -exec sh -c 'head "$1"; echo '\n'' -- {} \;
 
-./unlock -d testDirectory  -p testData/lockingParty/wECpub -r testData/unlockingParty/wRSApriv -s ANonTypicalSubjectName
+./unlock -d testDirectory  -p testData/lockingParty/wECpub -r testData/unlockingParty/wRSApriv -s   ATypicalSubjectName #ANonTypicalSubjectName
 echo 'unlock complete'
 #find testDirectory -type f -name TESTFILE -exec sh -c 'cat -t "$1"' -- {} \;
 

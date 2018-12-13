@@ -28,6 +28,6 @@ echo "unlocking......."
 
 
 
-./unlock -d testDirectoryFAIL  -p testData/lockingParty/wECpub22 -r testData/unlockingParty/wRSApriv33 -s TTTTTTT
+./unlock -d testDirectoryFAIL  -p testData/lockingParty/wECpub22 -r testData/unlockingParty/wRSApriv33 -s TTTTTTTAAAAAAAA
 
 
