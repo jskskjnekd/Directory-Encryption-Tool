@@ -12,11 +12,16 @@ build:
 	$(GOBUILD) -o $(QUESTION2BINARY_UNLOCK) -v unlock.go unlocker.go RSACipher.go cmd.go ECCipher.go certificate.go Cipher.go
 test:
 	$(GOTEST) keygen_test.go keygen.go Cipher.go certificate.go ECCipher.go RSACipher.go cmd.go readKeyfileAndSig.go
-	chmod u+x testSetup.sh
-	./testSetup.sh
+	# chmod u+x testSetup.sh
+	# ./testSetup.sh
+	# chmod u+x shouldBeFailedTest.sh
+	# ./shouldBeFailedTest.sh
+	chmod u+x shouldFailForDecrypt.sh
+	./shouldFailForDecrypt.sh
 clean:
 	rm -rf $(QUESTION1BINARY)
 	rm -rf $(QUESTION2BINARY_LOCK)
 	rm -rf $(QUESTION2BINARY_UNLOCK)
 	rm -rf testData
 	rm -rf testDirectory
+	rm -rf testDirectoryFAIL

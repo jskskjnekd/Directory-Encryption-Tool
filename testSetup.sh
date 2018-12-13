@@ -7,11 +7,10 @@ mkdir testData
 mkdir testData/lockingParty
 mkdir testData/unlockingParty
 
-mkdir -p testDirectory/{A,B}/{{A1,A2},{B1,B2}}
-find testDirectory -type d -exec touch {}/TESTFILE \;
 
 echo 'create files'
-# dd if=/dev/random of=TESTFILE bs=10 count=50
+mkdir -p testDirectory/{A,B}/{{A1,A2},{B1,B2}}
+find testDirectory -type d -exec touch {}/TESTFILE \;
 find testDirectory -type f -name TESTFILE -exec sh -c 'dd if=/dev/random of="$1" bs=10 count=50' -- {} \;
 
 ./keygen -t ec -s ATypicalSubjectName -pub testData/lockingParty/wECpub -priv testData/lockingParty/wECpriv
@@ -32,4 +31,15 @@ echo 'unlock complete'
 
 echo 'After Encryption, the sha256 sum of the directory is'
 checksumdir testDirectory
+
+
+
+
+
+
+
+
+
+
+
 

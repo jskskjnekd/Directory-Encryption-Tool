@@ -16,11 +16,13 @@ func main() {
 	//
 	// validate pubkey subject
 	//
-	locker.validatePubKeyFileSubject(pubKeyPath)
+	if !locker.validatePubKeyFileSubject(pubKeyPath) {
+		panic("Subject does NOT match!")
+	}
 	//
 	// create keyfile in current directory if it doesn't exist
 	//
-	createNamedfile(locker.directoryPath,"keyfile")
+	createNamedfile(locker.directoryPath, "keyfile")
 	//
 	// generate aes key, encrypt and export to keyfile
 	//
@@ -42,8 +44,8 @@ func main() {
 	//
 	// encrypt the files in this list.
 	//
-	for _,file := range fileList {
-		locker.encryptFileAndReplace(file,aes)
+	for _, file := range fileList {
+		locker.encryptFileAndReplace(file, aes)
 	}
 	//
 	//
@@ -53,6 +55,7 @@ func main() {
 	//
 	//
 }
+
 //
 // if keyfile exists, do nothing, else create keyfile
 //
@@ -62,9 +65,9 @@ func createNamedfile(filedir string, name string) {
 	//
 	// - - - - - - append keyfile to path
 	//
-	tempDirPath := strings.Split(filedir,"/")
-	tempDirPath = append(tempDirPath,name)
-	dirPath = strings.Join(tempDirPath,"/")
+	tempDirPath := strings.Split(filedir, "/")
+	tempDirPath = append(tempDirPath, name)
+	dirPath = strings.Join(tempDirPath, "/")
 
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
 		// path/to/whatever does not exist
@@ -81,11 +84,9 @@ func createKeySigFile(filepath string) {
 	//
 	// - - - - - - append keyfile to path
 	//
-	tempDirPath := strings.Split(filepath,"/")
-	tempDirPath = append(tempDirPath,"keyfile.sig")
-	dirPath = strings.Join(tempDirPath,"/")
-
-
+	tempDirPath := strings.Split(filepath, "/")
+	tempDirPath = append(tempDirPath, "keyfile.sig")
+	dirPath = strings.Join(tempDirPath, "/")
 
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
 		// path/to/whatever does not exist
@@ -107,7 +108,7 @@ func createKeySigFile(filepath string) {
 	}
 }
 
-func readFromLockInputs() ( *log.Logger, *Locker) {
+func readFromLockInputs() (*log.Logger, *Locker) {
 	logger := createlockLogger()
 	l := &Locker{}
 	l.setFlagParameters()
@@ -119,7 +120,6 @@ func closelockLogger(logger *log.Logger) {
 	logger.Println("\n...........END...............")
 }
 
-
 func createlockLogger() *log.Logger {
 	loggerFile, err := os.OpenFile("text.log",
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -130,5 +130,3 @@ func createlockLogger() *log.Logger {
 	logger.Println("\n\n\n------------------------Log File Created----------------------")
 	return logger
 }
-
-
